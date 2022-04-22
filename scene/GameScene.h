@@ -47,15 +47,19 @@ class GameScene {
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
 	DebugText* debugText_ = nullptr;
-	uint32_t textureHandle_ = 0;
-	Sprite* sprite_ = nullptr;
-	Model* model_ = nullptr;
-	WorldTransform worldTransform_;
+	//BG(スプライト)
+	uint32_t textureHandleBG_ = 0;
+	Sprite* spriteBG_ = nullptr;
+	//ビュープロジェクション(共通)
 	ViewProjection viewProjection_;
+	//ステージ
+	uint32_t textureHandleStage_ = 0;
+	Model* modelStage_ = nullptr;
+	WorldTransform worldTransformStage_;
 	//サウンド
-	uint32_t soundDataHandle_ = 0;
-	uint32_t voiceHandle_ = 0;
-	int32_t value_ = 0;
+	//uint32_t soundDataHandle_ = 0;
+	//uint32_t voiceHandle_ = 0;
+	//int32_t value_ = 0;
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
