@@ -26,11 +26,17 @@ class GameScene {
 	/// デストラクタ
 	/// </summary>
 	~GameScene();
-
 	/// <summary>
 	/// 初期化
 	/// </summary>
 	void Initialize();
+	void PlayerUpdate();
+	void BeamUpdate();
+	void BeamMove();
+	void BeamBorn();
+	void EnemyUpdate();
+	void EnemyMove();
+	void EnemyBorn();
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -56,6 +62,20 @@ class GameScene {
 	uint32_t textureHandleStage_ = 0;
 	Model* modelStage_ = nullptr;
 	WorldTransform worldTransformStage_;
+	//プレイヤー
+	uint32_t textureHandlePlayer_ = 0;
+	Model* modelPlayer_ = nullptr;
+	WorldTransform worldTransformPlayer_;
+	//ビーム
+	uint32_t textureHandleBeam_ = 0;
+	Model* modelBeam_ = nullptr;
+	WorldTransform worldTransformBeam_;
+	int beamFlag_ = 0;
+	//敵
+	uint32_t textureHandleEnemy_ = 0;
+	Model* modelEnemy_ = nullptr;
+	WorldTransform worldTransformEnemy_;
+	int enemyFlag_ = 0;
 	//サウンド
 	//uint32_t soundDataHandle_ = 0;
 	//uint32_t voiceHandle_ = 0;

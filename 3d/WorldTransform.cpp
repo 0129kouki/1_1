@@ -57,5 +57,5 @@ void WorldTransform::UpdateMatrix() {
 	}
 
 	// 定数バッファに書き込み
-	constMap->matWorld = matWorld_;
+		constMap->matWorld = matWorld_;
 }
