@@ -37,6 +37,11 @@ class GameScene {
 	void EnemyUpdate();
 	void EnemyMove();
 	void EnemyBorn();
+	void Collision();
+	void CollisionPlayerEnemy();
+	void CollisionEnemy();
+	void CollisionBeamEnemy();
+	//void CollisionBeamEnemy();
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -66,6 +71,7 @@ class GameScene {
 	uint32_t textureHandlePlayer_ = 0;
 	Model* modelPlayer_ = nullptr;
 	WorldTransform worldTransformPlayer_;
+	int playerLife_ = 3;
 	//ビーム
 	uint32_t textureHandleBeam_ = 0;
 	Model* modelBeam_ = nullptr;
@@ -76,6 +82,8 @@ class GameScene {
 	Model* modelEnemy_ = nullptr;
 	WorldTransform worldTransformEnemy_;
 	int enemyFlag_ = 0;
+	//スコア
+	int gameScore_ = 0;
 	//サウンド
 	//uint32_t soundDataHandle_ = 0;
 	//uint32_t voiceHandle_ = 0;
