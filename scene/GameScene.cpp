@@ -55,12 +55,13 @@ void GameScene::Initialize() {
 //更新
 void GameScene::Update() {
 	//プレイヤー更新
-	PlayerUpdate();
+	//PlayerUpdate();
 	//ビーム更新
-	BeamUpdate();
-	EnemyUpdate();
+	//BeamUpdate();
+	//敵更新
+	//EnemyUpdate();
 	//衝突判定
-	Collision();
+	//Collision();
 	CollisionEnemy();
 	// XMFLOAT2 position = sprite_-> GetPosition();
 	// position.x += 2.0f;
@@ -73,6 +74,23 @@ void GameScene::Update() {
 	// value_++;
 	// std::string strDebug = std::string("Value:") + std::to_string(value_);
 	// debugText_->Print(strDebug, 50, 50, 1.0f);
+
+	//各シーンの更新処理を呼び出す
+	switch (sceneMode_) 
+	{ 
+	case 0:
+		//ゲームプレイ更新
+		GamePlayUpdate();
+		break;
+	}
+}
+//ゲームプレイ更新
+void GameScene::GamePlayUpdate() 
+{ 
+	PlayerUpdate();  //プレイヤー更新
+	EnemyUpdate();   //敵更新
+	BeamUpdate();    //ビーム更新
+	Collision();     //衝突判定
 }
 //プレイヤー更新
 void GameScene::PlayerUpdate() {
@@ -208,7 +226,7 @@ void GameScene::CollisionBeamEnemy()
 		}
 	}
 }
-//表示
+ //表示
 void GameScene::Draw() {
 
 	// コマンドリストの取得
@@ -220,9 +238,16 @@ void GameScene::Draw() {
 
 	/// <summary>
 	/// ここに背景スプライトの描画処理を追加できる
+	//各シーンの背景2D表示を呼び出す
+	switch (sceneMode_) 
+	{ 
+	case 0:
+		GamePlayDraw2DBack();     //ゲームプレイ2D背景表示
+		break;
+	}
 	/// </summary>
 
-	spriteBG_->Draw();
+	//spriteBG_->Draw();
 	// スプライト描画後処理
 	Sprite::PostDraw();
 	// 深度バッファクリア
@@ -235,7 +260,61 @@ void GameScene::Draw() {
 
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
+	//各シーンの背景3D表示を呼び出す
+	switch (sceneMode_) {
+	case 0:
+		GamePlayDraw3D();         //ゲームプレイ3D背景表示
+		break;
+	}
 	/// </summary>
+	////ステージ
+	//modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
+	////プレイヤー
+	//modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
+	////ビーム
+	//if (beamFlag_ == 1) {
+	//	modelBeam_->Draw(worldTransformBeam_, viewProjection_, textureHandleBeam_);
+	//}
+	////敵
+	//if (enemyFlag_ == 1) {
+	//	modelEnemy_->Draw(worldTransformEnemy_, viewProjection_, textureHandleEnemy_);
+	//}
+	// 3Dオブジェクト描画後処理
+	Model::PostDraw();
+#pragma endregion
+
+#pragma region 前景スプライト描画
+	// 前景スプライト描画前処理
+	Sprite::PreDraw(commandList);
+
+	/// <summary>
+	/// ここに前景スプライトの描画処理を追加できる
+	//各シーンの近景2D表示を呼び出す
+	switch (sceneMode_) {
+	case 0:
+		GamePlayDraw2DNear();     //ゲームプレイ2D近景表示
+		break;
+	}
+	//ゲームスコア
+	//char str[100];
+	//sprintf_s(str, "SCORE %d", gameScore_);
+	//debugText_->Print(str, 200, 10, 2);
+	//char str2[100];
+	//sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
+	//debugText_->Print(str2, 600, 10, 2);
+	/// </summary>
+
+	// デバッグテキストの描画
+	debugText_->DrawAll(commandList);
+	//
+	// スプライト描画後処理
+	Sprite::PostDraw();
+
+#pragma endregion
+}
+//ゲームプレイ表示3D
+ void GameScene::GamePlayDraw3D()
+ {
 	//ステージ
 	modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
 	//プレイヤー
@@ -248,30 +327,21 @@ void GameScene::Draw() {
 	if (enemyFlag_ == 1) {
 		modelEnemy_->Draw(worldTransformEnemy_, viewProjection_, textureHandleEnemy_);
 	}
-	// 3Dオブジェクト描画後処理
-	Model::PostDraw();
-#pragma endregion
+ }
+ //ゲームプレイ表示2D背景
+ void GameScene::GamePlayDraw2DBack() 
+ {
+	 //背景
+	 spriteBG_->Draw();
+ }
+ //ゲームプレイ表示2D近景
+ void GameScene::GamePlayDraw2DNear() 
+ {
+	 char str[100];
+	 sprintf_s(str, "SCORE %d", gameScore_);
+	 debugText_->Print(str, 200, 10, 2);
 
-#pragma region 前景スプライト描画
-	// 前景スプライト描画前処理
-	Sprite::PreDraw(commandList);
-
-	/// <summary>
-	/// ここに前景スプライトの描画処理を追加できる
-	//ゲームスコア
-	char str[100];
-	sprintf_s(str, "SCORE %d", gameScore_);
-	debugText_->Print(str, 200, 10, 2);
-	char str2[100];
-	sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
-	debugText_->Print(str2, 600, 10, 2);
-	/// </summary>
-
-	// デバッグテキストの描画
-	debugText_->DrawAll(commandList);
-	//
-	// スプライト描画後処理
-	Sprite::PostDraw();
-
-#pragma endregion
-}
+	 char str2[100];
+	 sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
+	 debugText_->Print(str2, 600, 10, 2);
+ }

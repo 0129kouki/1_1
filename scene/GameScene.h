@@ -41,8 +41,10 @@ class GameScene {
 	void CollisionPlayerEnemy();
 	void CollisionEnemy();
 	void CollisionBeamEnemy();
-	//void CollisionBeamEnemy();
-
+	void GamePlayUpdate();         //ゲームプレイ更新
+	void GamePlayDraw3D();         //ゲームプレイ3D表示
+	void GamePlayDraw2DBack();     //ゲームプレイ背景2D表示
+	void GamePlayDraw2DNear();     //ゲームプレイ近景2D表示
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
@@ -88,6 +90,7 @@ class GameScene {
 	//uint32_t soundDataHandle_ = 0;
 	//uint32_t voiceHandle_ = 0;
 	//int32_t value_ = 0;
+	int sceneMode_ = 0;          //シーンモード(0：ゲームプレイ　1：ゲームタイトル)
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
