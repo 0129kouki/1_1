@@ -11,6 +11,8 @@ GameScene::~GameScene() {
 	delete spriteBG_;
 	delete modelStage_;
 	delete modelPlayer_;
+	delete spriteTitle_;
+	delete spriteEnter_;
 }
 //初期化
 void GameScene::Initialize() {
@@ -46,14 +48,27 @@ void GameScene::Initialize() {
 	modelEnemy_ = Model::Create();
 	worldTransformEnemy_.scale_ = {0.33f, 0.33f, 0.33f};
 	worldTransformEnemy_.Initialize();
-
 	//サウンド
 	// soundDataHandle_ = audio_->LoadWave("se_sad03.wav");
 	// audio_->PlayWave(soundDataHandle_);
 	// voiceHandle_ = audio_->PlayWave(soundDataHandle_, true);
+
+	//タイトル(2Dスプライト)
+	textureHandleTitle_ = TextureManager::Load("title.png");
+	spriteTitle_ = Sprite::Create(textureHandleTitle_, {0, 0});
+
+	//エンター
+	textureHandleEnter_ = TextureManager::Load("enter.png");
+	spriteEnter_ = Sprite::Create(textureHandleEnter_, {800/2, 500});
+
+	//エンディング
+	textureHandleEnding_ = TextureManager::Load("gameover.png");
+	spriteEnding_ = Sprite::Create(textureHandleEnding_, {0, 0});
 }
 //更新
 void GameScene::Update() {
+	gameTimer_ ++;
+	CollisionEnemy();
 	//プレイヤー更新
 	//PlayerUpdate();
 	//ビーム更新
@@ -62,7 +77,6 @@ void GameScene::Update() {
 	//EnemyUpdate();
 	//衝突判定
 	//Collision();
-	CollisionEnemy();
 	// XMFLOAT2 position = sprite_-> GetPosition();
 	// position.x += 2.0f;
 	// position.y += 1.0f;
@@ -74,13 +88,21 @@ void GameScene::Update() {
 	// value_++;
 	// std::string strDebug = std::string("Value:") + std::to_string(value_);
 	// debugText_->Print(strDebug, 50, 50, 1.0f);
-
 	//各シーンの更新処理を呼び出す
 	switch (sceneMode_) 
 	{ 
 	case 0:
+	
 		//ゲームプレイ更新
 		GamePlayUpdate();
+		break;
+	case 1:
+		//タイトル
+		TitleUpdate();
+		break;
+	case 2:
+		//エンディング
+		EndingUpdate();
 		break;
 	}
 }
@@ -181,6 +203,7 @@ void GameScene::Collision()
 	//衝突判定(プレイヤーと敵)
 	CollisionPlayerEnemy();
 }
+//衝突判定
 void GameScene::CollisionEnemy() 
 {
 	//衝突判定(敵と弾)
@@ -201,6 +224,11 @@ void GameScene::CollisionPlayerEnemy()
 			playerLife_ -= 1;
 			//存在しない
 			enemyFlag_ = 0;
+			if (playerLife_ == 0) 
+			{
+				//モードをゲームプレイへ変更
+				sceneMode_ = 2;
+			}
 		}
 	}
 }
@@ -242,7 +270,16 @@ void GameScene::Draw() {
 	switch (sceneMode_) 
 	{ 
 	case 0:
-		GamePlayDraw2DBack();     //ゲームプレイ2D背景表示
+		//ゲームプレイ2D背景表示
+		GamePlayDraw2DBack(); 
+		break;
+	case 1:
+		//タイトル2D表示
+		TitleDraw2DNear();
+		break;
+	case 2:
+		//エンディング
+		EndingDraw();
 		break;
 	}
 	/// </summary>
@@ -265,7 +302,11 @@ void GameScene::Draw() {
 	case 0:
 		GamePlayDraw3D();         //ゲームプレイ3D背景表示
 		break;
+	case 2:
+		GamePlayDraw3D();         //ゲームプレイ3D背景表示
+		break;
 	}
+
 	/// </summary>
 	////ステージ
 	//modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
@@ -294,6 +335,10 @@ void GameScene::Draw() {
 	case 0:
 		GamePlayDraw2DNear();     //ゲームプレイ2D近景表示
 		break;
+		case 2:
+			//エンディング
+		    Ending2Draw();
+			break;
 	}
 	//ゲームスコア
 	//char str[100];
@@ -344,4 +389,64 @@ void GameScene::Draw() {
 	 char str2[100];
 	 sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
 	 debugText_->Print(str2, 600, 10, 2);
+ }
+ //タイトル更新
+ void GameScene::TitleUpdate() 
+ {
+	//エンターキーを押した瞬間
+	 if (input_->TriggerKey(DIK_RETURN)) 
+	 {
+		GamePlayStart();
+		 //モードをゲームプレイへ変更
+		 sceneMode_ = 0;
+	 }
+ }
+ //タイトル表示2D
+ void GameScene::TitleDraw2DNear() 
+ { 
+	
+	 //タイトル表示
+	 spriteTitle_->Draw();
+
+	 if (gameTimer_ % 40 >= 20) 
+	 {
+	 //エンター表示
+		 spriteEnter_->Draw();
+	 }
+ }
+ //エンディング更新
+ void GameScene::EndingUpdate() {
+	 //エンターキーを押した瞬間
+	 if (input_->TriggerKey(DIK_RETURN)) {
+		 //モードをゲームプレイへ変更
+		 sceneMode_ = 1;
+	 }
+ }
+ //エンディング表示2D
+ void GameScene::EndingDraw() {
+
+	 //背景
+	 spriteBG_->Draw();
+	 //エンディング表示
+	 spriteEnding_->Draw();
+
+	//if (gameTimer_ % 40 >= 20) {
+	// //エンター表示
+	// spriteEnter_->Draw();
+	//}
+ }
+ //エンディング表示2D(エンター)
+ void GameScene::Ending2Draw() {
+	 if (gameTimer_ % 40 >= 20) {
+		 //エンター表示
+		 spriteEnter_->Draw();
+	 }
+ }
+
+ void GameScene::GamePlayStart() 
+ {
+	playerLife_ = 3;
+    gameScore_ = 0;
+    enemyFlag_ = 0;
+    beamFlag_ == 0;
  }

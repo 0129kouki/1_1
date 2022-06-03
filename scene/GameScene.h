@@ -45,6 +45,12 @@ class GameScene {
 	void GamePlayDraw3D();         //ゲームプレイ3D表示
 	void GamePlayDraw2DBack();     //ゲームプレイ背景2D表示
 	void GamePlayDraw2DNear();     //ゲームプレイ近景2D表示
+	void TitleUpdate();            //タイトル更新
+	void TitleDraw2DNear();        //タイトル2D
+	void EndingUpdate();           //エンディング更新
+	void EndingDraw();             //エンディング
+	void Ending2Draw();            //エンター
+	void GamePlayStart();          //初期化処理
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
@@ -90,7 +96,21 @@ class GameScene {
 	//uint32_t soundDataHandle_ = 0;
 	//uint32_t voiceHandle_ = 0;
 	//int32_t value_ = 0;
-	int sceneMode_ = 0;          //シーンモード(0：ゲームプレイ　1：ゲームタイトル)
+	//シーンモード(0：ゲームプレイ　1：ゲームタイトル)
+	int sceneMode_ = 1;
+	//タイトル(スプライト)
+	uint32_t textureHandleTitle_ = 0;
+	Sprite* spriteTitle_ = nullptr;
+	uint32_t  gameTimer_ = 0;
+
+	uint32_t textureHandleEnter_ = 0;
+	Sprite* spriteEnter_ = nullptr;
+
+	uint32_t textureHandleEnding_ = 0;
+	Sprite* spriteEnding_ = nullptr;
+
+	uint32_t textureHandleEnding2_ = 0;
+	Sprite* spriteEnding2_ = nullptr;
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
