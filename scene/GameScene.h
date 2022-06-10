@@ -48,7 +48,7 @@ class GameScene {
 	void TitleUpdate();            //タイトル更新
 	void TitleDraw2DNear();        //タイトル2D
 	void EndingUpdate();           //エンディング更新
-	void EndingDraw();             //エンディング
+	void GameOverDraw2DNear();     //エンディング
 	void Ending2Draw();            //エンター
 	void GamePlayStart();          //初期化処理
 	/// <summary>
@@ -83,19 +83,28 @@ class GameScene {
 	//ビーム
 	uint32_t textureHandleBeam_ = 0;
 	Model* modelBeam_ = nullptr;
-	WorldTransform worldTransformBeam_;
-	int beamFlag_ = 0;
+	WorldTransform worldTransformBeam_[10];
+	//ビーム存在フラグ
+	int beamFlag_[10] = {};
+	//ビーム発射タイマー
+	int beamTimer_ = 0;
 	//敵
 	uint32_t textureHandleEnemy_ = 0;
-	Model* modelEnemy_ = nullptr;
-	WorldTransform worldTransformEnemy_;
-	int enemyFlag_ = 0;
+	Model* modelEnemy_ = 0;
+	WorldTransform worldTransformEnemy_[10];
+	//敵存在フラグ
+	int enemyFlag_[10] = {};
+	//敵のスピード
+	float enemySpeed_[10] = {};
 	//スコア
 	int gameScore_ = 0;
 	//サウンド
-	//uint32_t soundDataHandle_ = 0;
-	//uint32_t voiceHandle_ = 0;
-	//int32_t value_ = 0;
+	uint32_t soundDataHandleTitleBGM_ = 0;     //タイトルBGM
+	uint32_t soundDataHandleGamePlayBGM_ = 0;  //ゲームプレイBGM
+	uint32_t soundDataHandleGameOverBGM_ = 0;  //ゲームオーバーBGM
+	uint32_t soundDataHandleEnemyHitSE_ = 0;   //敵ヒットSE
+	uint32_t soundDataHandlePlayerHitSE_ = 0; //プレイヤーヒットSE
+	uint32_t voiceHandleBGM_ = 0;              //音声再生ハンドル
 	//シーンモード(0：ゲームプレイ　1：ゲームタイトル)
 	int sceneMode_ = 1;
 	//タイトル(スプライト)

@@ -41,25 +41,32 @@ void GameScene::Initialize() {
 	//ビーム
 	textureHandleBeam_ = TextureManager::Load("beam.png");
 	modelBeam_ = Model::Create();
-	worldTransformBeam_.scale_ = {0.33f, 0.33f, 0.33f};
-	worldTransformBeam_.Initialize();
+	for (int b = 0; b < 10; b++) {
+		worldTransformBeam_[b].scale_ = {0.33f, 0.33f, 0.33f};
+		worldTransformBeam_[b].Initialize();
+	}
 	//敵
 	textureHandleEnemy_ = TextureManager::Load("enemy.png");
 	modelEnemy_ = Model::Create();
-	worldTransformEnemy_.scale_ = {0.33f, 0.33f, 0.33f};
-	worldTransformEnemy_.Initialize();
-	//サウンド
-	// soundDataHandle_ = audio_->LoadWave("se_sad03.wav");
-	// audio_->PlayWave(soundDataHandle_);
-	// voiceHandle_ = audio_->PlayWave(soundDataHandle_, true);
-
+	for (int e = 0; e < 10; e++) {
+		worldTransformEnemy_[e].scale_ = {0.5f, 0.5f, 0.5f};
+		worldTransformEnemy_[e].Initialize(/*dxCommon_->GetDevice()*/);
+	}
+	//サウンドデータの読み込み
+	soundDataHandleTitleBGM_ = audio_->LoadWave("Audio/Ring05.wav");
+	soundDataHandleGamePlayBGM_ = audio_->LoadWave("Audio/Ring08.wav");
+	soundDataHandleGameOverBGM_ = audio_->LoadWave("Audio/Ring09.wav");
+	soundDataHandleEnemyHitSE_ = audio_->LoadWave("Audio/chord.wav");
+	soundDataHandlePlayerHitSE_ = audio_->LoadWave("Audio/tada.wav");
+	//タイトルBGMを再生
+	voiceHandleBGM_ = audio_->PlayWave(soundDataHandleTitleBGM_, true);
 	//タイトル(2Dスプライト)
 	textureHandleTitle_ = TextureManager::Load("title.png");
 	spriteTitle_ = Sprite::Create(textureHandleTitle_, {0, 0});
 
 	//エンター
 	textureHandleEnter_ = TextureManager::Load("enter.png");
-	spriteEnter_ = Sprite::Create(textureHandleEnter_, {800/2, 500});
+	spriteEnter_ = Sprite::Create(textureHandleEnter_, {800 / 2, 500});
 
 	//エンディング
 	textureHandleEnding_ = TextureManager::Load("gameover.png");
@@ -67,16 +74,16 @@ void GameScene::Initialize() {
 }
 //更新
 void GameScene::Update() {
-	gameTimer_ ++;
+	gameTimer_++;
 	CollisionEnemy();
 	//プレイヤー更新
-	//PlayerUpdate();
+	// PlayerUpdate();
 	//ビーム更新
-	//BeamUpdate();
+	// BeamUpdate();
 	//敵更新
-	//EnemyUpdate();
+	// EnemyUpdate();
 	//衝突判定
-	//Collision();
+	// Collision();
 	// XMFLOAT2 position = sprite_-> GetPosition();
 	// position.x += 2.0f;
 	// position.y += 1.0f;
@@ -89,10 +96,9 @@ void GameScene::Update() {
 	// std::string strDebug = std::string("Value:") + std::to_string(value_);
 	// debugText_->Print(strDebug, 50, 50, 1.0f);
 	//各シーンの更新処理を呼び出す
-	switch (sceneMode_) 
-	{ 
+	switch (sceneMode_) {
 	case 0:
-	
+
 		//ゲームプレイ更新
 		GamePlayUpdate();
 		break;
@@ -107,12 +113,12 @@ void GameScene::Update() {
 	}
 }
 //ゲームプレイ更新
-void GameScene::GamePlayUpdate() 
-{ 
-	PlayerUpdate();  //プレイヤー更新
-	EnemyUpdate();   //敵更新
-	BeamUpdate();    //ビーム更新
-	Collision();     //衝突判定
+void GameScene::GamePlayUpdate() {
+	PlayerUpdate(); //プレイヤー更新
+	EnemyUpdate();  //敵更新
+	BeamUpdate();   //ビーム更新
+	Collision();    //衝突判定
+
 }
 //プレイヤー更新
 void GameScene::PlayerUpdate() {
@@ -121,15 +127,17 @@ void GameScene::PlayerUpdate() {
 	if (input_->PushKey(DIK_RIGHT)) {
 		worldTransformPlayer_.translation_.x += 0.1f;
 	}
+	//右移動制限
+	if (worldTransformPlayer_.translation_.x >= 4) {
+		worldTransformPlayer_.translation_.x = 4;
+	}
 	//左へ移動
 	if (input_->PushKey(DIK_LEFT)) {
 		worldTransformPlayer_.translation_.x -= 0.1f;
 	}
+	//左移動制限
 	if (worldTransformPlayer_.translation_.x <= -4) {
 		worldTransformPlayer_.translation_.x = -4;
-	}
-	if (worldTransformPlayer_.translation_.x >= 4) {
-		worldTransformPlayer_.translation_.x = 4;
 	}
 	//行列更新
 	worldTransformPlayer_.UpdateMatrix();
@@ -140,29 +148,46 @@ void GameScene::BeamUpdate() {
 	BeamBorn();
 	//移動
 	BeamMove();
+	for (int b = 0; b < 10; b++) {
 
-	//行列更新
-	worldTransformBeam_.UpdateMatrix();
+		//行列更新
+		worldTransformBeam_[b].UpdateMatrix();
+	}
 }
 //ビーム移動
 void GameScene::BeamMove() {
-	if (beamFlag_ == 1) {
-		worldTransformBeam_.translation_.z += 0.5f;
-		worldTransformBeam_.rotation_.x += 0.1f;
-		if (worldTransformBeam_.translation_.z >= 40)
-		{
-			beamFlag_ = 0;
-			worldTransformBeam_.translation_.z = 0;
+	for (int b = 0; b < 10; b++) {
+
+		if (beamFlag_[b] == 1) {
+			worldTransformBeam_[b].translation_.z += 0.5f;
+			worldTransformBeam_[b].rotation_.x += 0.1f;
+			if (worldTransformBeam_[b].translation_.z >= 40) {
+				beamFlag_[b] = 0;
+				worldTransformBeam_[b].translation_.z = 0;
+			}
 		}
 	}
 }
 //ビーム発射
 void GameScene::BeamBorn() {
-	if (beamFlag_ == 0) {
-		if (input_->PushKey(DIK_SPACE)) {
-			worldTransformBeam_.translation_.x = worldTransformPlayer_.translation_.x;
-			worldTransformBeam_.translation_.z += 0.1f;
-			beamFlag_ = 1;
+	if (beamTimer_ == 0) {
+		for (int b = 0; b < 10; b++) {
+			if (beamFlag_[b] == 0) {
+				if (input_->PushKey(DIK_SPACE)) {
+					worldTransformBeam_[b].translation_.x = worldTransformPlayer_.translation_.x;
+					worldTransformBeam_[b].translation_.z += 0.1f;
+					beamFlag_[b] = 1;
+					beamTimer_ = 1;
+					break;
+				}
+			}
+		}
+	} else {
+		//発射タイマーが1以上
+		// 10を超えると再び発射が可能
+		beamTimer_++;
+		if (beamTimer_ > 10) {
+			beamTimer_ = 0;
 		}
 	}
 }
@@ -172,89 +197,174 @@ void GameScene::EnemyUpdate() {
 	EnemyMove();
 	//敵発生
 	EnemyBorn();
-	worldTransformEnemy_.UpdateMatrix();
+	for (int e = 0; e < 10; e++) {
+		worldTransformEnemy_[e].UpdateMatrix();
+	}
 }
 //敵移動
 void GameScene::EnemyMove() {
-	if (enemyFlag_ == 1) {
-		worldTransformEnemy_.translation_.z -= 0.2f;
-		worldTransformEnemy_.rotation_.x -= 0.1f;
-		if (worldTransformEnemy_.translation_.z <= -5) {
-			enemyFlag_ = 0;
-			worldTransformEnemy_.translation_.z = 40;
+	for (int e = 0; e < 10; e++) {
+		if (enemyFlag_[e] == 1) {
+			worldTransformEnemy_[e].translation_.z -= 0.2f;
+			worldTransformEnemy_[e].rotation_.x -= 0.1f;
+			if (worldTransformEnemy_[e].translation_.z <= -5) {
+				enemyFlag_[e] = 0;
+				worldTransformEnemy_[e].translation_.z = 40;
+			}
+			worldTransformEnemy_[e].translation_.x += enemySpeed_[e];
+	if (worldTransformEnemy_[e] .translation_.x <= -4) {
+				enemySpeed_[e] = 0.2f;
+	}
+	if (worldTransformEnemy_[e].translation_.x >= 4) {
+		enemySpeed_[e] = -0.2f;
+	}
 		}
 	}
+
+	//for (int e = 0; e < 10; e++) {
+	//	//敵スピード
+	//	if (rand() % 2 == 0) {
+	//		// worldTransformEnemy_[e].translation_.z -= 0.2f;
+	//		// worldTransformEnemy_[e].rotation_.x -= 0.1f;
+	//		enemySpeed_[e] = 0.2f;
+	//	} else {
+	//		// worldTransformEnemy_[e].translation_.z = 40;
+	//		enemySpeed_[e] = -0.2f;
+	//	}
+	//}
 };
 //敵発生
 void GameScene::EnemyBorn() {
-	if (enemyFlag_ == 0) {
-		int x = rand() % 80;
-		float x2 = (float)x / 10 - 4;
-		worldTransformEnemy_.translation_.x = x2;
-		worldTransformEnemy_.translation_.z = 40;
-		enemyFlag_ = 1;
-		// worldTransformEnemy_.translation_.x = worldTransformPlayer_.translation_.x;
-		// worldTransformEnemy_.translation_.z -= 0.1f;
+	//乱数で発生
+	if (rand() % 10 == 0) {
+		//敵でループ
+		for (int e = 0; e < 10; e++) {
+			//存在しなければ
+			if (enemyFlag_[e] == 0) {
+				int x = rand() % 80;
+				float x2 = (float)x / 10 - 4;
+				worldTransformEnemy_[e].translation_.x = x2;
+				worldTransformEnemy_[e].translation_.z = 40;
+				enemyFlag_[e] = 1;
+			//敵スピード
+			if (rand() % 2 == 0) {
+
+				enemySpeed_[e] = 0.2f;
+			} else {
+				enemySpeed_[e] = -2.0f;
+			}
+				//ループ終了
+				break;
+			}
+		}/*
+		for (int e = 0; e < 10; e++) {
+		}*/
 	}
+	// if (enemyFlag_ == 0) {
+	//	int x = rand() % 80;
+	//	float x2 = (float)x / 10 - 4;
+	//	worldTransformEnemy_.translation_.x = x2;
+	//	worldTransformEnemy_.translation_.z = 40;
+	//	enemyFlag_ = 1;
+	//	// worldTransformEnemy_.translation_.x = worldTransformPlayer_.translation_.x;
+	//	// worldTransformEnemy_.translation_.z -= 0.1f;
+	// }
 };
 //衝突判定
-void GameScene::Collision() 
-{
+void GameScene::Collision() {
 	//衝突判定(プレイヤーと敵)
 	CollisionPlayerEnemy();
 }
 //衝突判定
-void GameScene::CollisionEnemy() 
-{
+void GameScene::CollisionEnemy() {
 	//衝突判定(敵と弾)
 	CollisionBeamEnemy();
 }
 //衝突判定(プレイヤーと敵)
-void GameScene::CollisionPlayerEnemy() 
-{
+void GameScene::CollisionPlayerEnemy() {
+
 	//敵が存在すれば
-	if (enemyFlag_ == 1)
-	{
-		//差を求める
-		float dx = abs(worldTransformPlayer_.translation_.x - worldTransformEnemy_.translation_.x);
-		float dz = abs(worldTransformPlayer_.translation_.z - worldTransformEnemy_.translation_.z);
-		//衝突したら
-		if (dx < 1 && dz < 1)
-		{
-			playerLife_ -= 1;
-			//存在しない
-			enemyFlag_ = 0;
-			if (playerLife_ == 0) 
-			{
-				//モードをゲームプレイへ変更
-				sceneMode_ = 2;
+	for (int e = 0; e < 10; e++) {
+		if (enemyFlag_[e] == 1) {
+			//差を求める
+			float dx =
+			  abs(worldTransformPlayer_.translation_.x - worldTransformEnemy_[e].translation_.x);
+			float dz =
+			  abs(worldTransformPlayer_.translation_.z - worldTransformEnemy_[e].translation_.z);
+			//衝突したら
+			if (dx < 1 && dz < 1) {
+				playerLife_ -= 1;
+				//存在しない
+				enemyFlag_[e] = 0;
+				//プレイヤーヒットSE
+				audio_->PlayWave(soundDataHandlePlayerHitSE_);
+				if (playerLife_ == 0) {
+					//モードをゲームプレイへ変更
+					sceneMode_ = 2;
+					// BGM切り替え
+					audio_->StopWave(voiceHandleBGM_); // BGMを停止
+					voiceHandleBGM_ =
+					  audio_->PlayWave(soundDataHandleGameOverBGM_, true); //ゲームオーバーBGMを再生
+	
+				}
 			}
 		}
 	}
 }
 //衝突判定(敵と弾)
-void GameScene::CollisionBeamEnemy()
-{
-	//敵と弾が存在すれば
-	if (enemyFlag_ == 1 && beamFlag_ == 1) 
-	{
-		//差を求める
-		float dx = abs(worldTransformBeam_.translation_.x - worldTransformEnemy_.translation_.x);
-		float dz = abs(worldTransformBeam_.translation_.z - worldTransformEnemy_.translation_.z);
-		//衝突したら
-		if (dx < 1 && dz < 1) 
-		{
-			//スコア加算
-			gameScore_ += 1;
-			//弾初期化
-			worldTransformBeam_.translation_.z = 0;
-			//存在しない
-			enemyFlag_ = 0;
-			beamFlag_ = 0;
+void GameScene::CollisionBeamEnemy() {
+	//敵でループ
+	for (int e = 0; e < 10; e++) {
+		//敵が存在すれば
+		if (enemyFlag_[e] == 1) {
+			//ビームでループ
+			for (int b = 0; b < 10; b++) {
+				//ビームが存在すれば
+				if (beamFlag_[b] == 1) {
+					//差を求める
+					float dx = abs(
+					  worldTransformBeam_[b].translation_.x -
+					  worldTransformEnemy_[e].translation_.x);
+					float dz = abs(
+					  worldTransformBeam_[b].translation_.z -
+					  worldTransformEnemy_[e].translation_.z);
+					//衝突したら
+					if (dx < 1 && dz < 1) {
+						//プレイヤーヒットSE
+						audio_->PlayWave(soundDataHandleEnemyHitSE_);
+						//スコア加算
+						gameScore_ += 1;
+						//弾初期化
+						worldTransformBeam_[b].translation_.z = 0;
+						//存在しない
+						enemyFlag_[e] = 0;
+
+						beamFlag_[b] = 0;
+					}
+				}
+			}
 		}
 	}
+	////敵と弾が存在すれば
+	// if (enemyFlag_ == 1 && beamFlag_ == 1)
+	//{
+	//	//差を求める
+	//	float dx = abs(worldTransformBeam_.translation_.x - worldTransformEnemy_.translation_.x);
+	//	float dz = abs(worldTransformBeam_.translation_.z - worldTransformEnemy_.translation_.z);
+	//	//衝突したら
+	//	if (dx < 1 && dz < 1)
+	//	{
+	//		//スコア加算
+	//		gameScore_ += 1;
+	//		//弾初期化
+	//		worldTransformBeam_.translation_.z = 0;
+	//		//存在しない
+	//		enemyFlag_ = 0;
+	//		beamFlag_ = 0;
+	//	}
+	// }
 }
- //表示
+//表示
 void GameScene::Draw() {
 
 	// コマンドリストの取得
@@ -267,11 +377,10 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに背景スプライトの描画処理を追加できる
 	//各シーンの背景2D表示を呼び出す
-	switch (sceneMode_) 
-	{ 
+	switch (sceneMode_) {
 	case 0:
 		//ゲームプレイ2D背景表示
-		GamePlayDraw2DBack(); 
+		GamePlayDraw2DBack();
 		break;
 	case 1:
 		//タイトル2D表示
@@ -279,13 +388,13 @@ void GameScene::Draw() {
 		break;
 	case 2:
 		//エンディング
-		EndingDraw();
+		GameOverDraw2DNear();
 		break;
 	}
 	/// </summary>
 
-	//spriteBG_->Draw();
-	// スプライト描画後処理
+	// spriteBG_->Draw();
+	//  スプライト描画後処理
 	Sprite::PostDraw();
 	// 深度バッファクリア
 	dxCommon_->ClearDepthBuffer();
@@ -300,27 +409,27 @@ void GameScene::Draw() {
 	//各シーンの背景3D表示を呼び出す
 	switch (sceneMode_) {
 	case 0:
-		GamePlayDraw3D();         //ゲームプレイ3D背景表示
+		GamePlayDraw3D(); //ゲームプレイ3D背景表示
 		break;
 	case 2:
-		GamePlayDraw3D();         //ゲームプレイ3D背景表示
+		GamePlayDraw3D(); //ゲームプレイ3D背景表示
 		break;
 	}
 
 	/// </summary>
 	////ステージ
-	//modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
+	// modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
 	////プレイヤー
-	//modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
+	// modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
 	////ビーム
-	//if (beamFlag_ == 1) {
+	// if (beamFlag_ == 1) {
 	//	modelBeam_->Draw(worldTransformBeam_, viewProjection_, textureHandleBeam_);
-	//}
+	// }
 	////敵
-	//if (enemyFlag_ == 1) {
+	// if (enemyFlag_ == 1) {
 	//	modelEnemy_->Draw(worldTransformEnemy_, viewProjection_, textureHandleEnemy_);
-	//}
-	// 3Dオブジェクト描画後処理
+	// }
+	//  3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
 
@@ -333,20 +442,20 @@ void GameScene::Draw() {
 	//各シーンの近景2D表示を呼び出す
 	switch (sceneMode_) {
 	case 0:
-		GamePlayDraw2DNear();     //ゲームプレイ2D近景表示
+		GamePlayDraw2DNear(); //ゲームプレイ2D近景表示
 		break;
-		case 2:
-			//エンディング
-		    Ending2Draw();
-			break;
+	case 2:
+		//エンディング
+		Ending2Draw();
+		break;
 	}
 	//ゲームスコア
-	//char str[100];
-	//sprintf_s(str, "SCORE %d", gameScore_);
-	//debugText_->Print(str, 200, 10, 2);
-	//char str2[100];
-	//sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
-	//debugText_->Print(str2, 600, 10, 2);
+	// char str[100];
+	// sprintf_s(str, "SCORE %d", gameScore_);
+	// debugText_->Print(str, 200, 10, 2);
+	// char str2[100];
+	// sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
+	// debugText_->Print(str2, 600, 10, 2);
 	/// </summary>
 
 	// デバッグテキストの描画
@@ -358,95 +467,104 @@ void GameScene::Draw() {
 #pragma endregion
 }
 //ゲームプレイ表示3D
- void GameScene::GamePlayDraw3D()
- {
+void GameScene::GamePlayDraw3D() {
 	//ステージ
 	modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
 	//プレイヤー
 	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
 	//ビーム
-	if (beamFlag_ == 1) {
-		modelBeam_->Draw(worldTransformBeam_, viewProjection_, textureHandleBeam_);
+	for (int b = 0; b < 10; b++) {
+		if (beamFlag_[b] == 1) {
+			modelBeam_->Draw(worldTransformBeam_[b], viewProjection_, textureHandleBeam_);
+		}
 	}
 	//敵
-	if (enemyFlag_ == 1) {
-		modelEnemy_->Draw(worldTransformEnemy_, viewProjection_, textureHandleEnemy_);
+	for (int e = 0; e < 10; e++) {
+		if (enemyFlag_[e] == 1) {
+			modelEnemy_->Draw(worldTransformEnemy_[e], viewProjection_, textureHandleEnemy_);
+		}
 	}
- }
- //ゲームプレイ表示2D背景
- void GameScene::GamePlayDraw2DBack() 
- {
-	 //背景
-	 spriteBG_->Draw();
- }
- //ゲームプレイ表示2D近景
- void GameScene::GamePlayDraw2DNear() 
- {
-	 char str[100];
-	 sprintf_s(str, "SCORE %d", gameScore_);
-	 debugText_->Print(str, 200, 10, 2);
+}
+//ゲームプレイ表示2D背景
+void GameScene::GamePlayDraw2DBack() {
+	//背景
+	spriteBG_->Draw();
+}
+//ゲームプレイ表示2D近景
+void GameScene::GamePlayDraw2DNear() {
+	char str[100];
+	sprintf_s(str, "SCORE %d", gameScore_);
+	debugText_->Print(str, 200, 10, 2);
 
-	 char str2[100];
-	 sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
-	 debugText_->Print(str2, 600, 10, 2);
- }
- //タイトル更新
- void GameScene::TitleUpdate() 
- {
+	char str2[100];
+	sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
+	debugText_->Print(str2, 600, 10, 2);
+}
+//タイトル更新
+void GameScene::TitleUpdate() {
 	//エンターキーを押した瞬間
-	 if (input_->TriggerKey(DIK_RETURN)) 
-	 {
+	if (input_->TriggerKey(DIK_RETURN)) {
 		GamePlayStart();
-		 //モードをゲームプレイへ変更
-		 sceneMode_ = 0;
-	 }
- }
- //タイトル表示2D
- void GameScene::TitleDraw2DNear() 
- { 
+		//モードをゲームプレイへ変更
+		sceneMode_ = 0;
+		//BGM切り替え
+		audio_->StopWave(voiceHandleBGM_);//BGMを停止
+		voiceHandleBGM_ = audio_->PlayWave(soundDataHandleGamePlayBGM_, true);//ゲームプレイBGMを再生
+	}
+}
+//タイトル表示2D
+void GameScene::TitleDraw2DNear() {
+
+	//タイトル表示
+	spriteTitle_->Draw();
+
+	if (gameTimer_ % 40 >= 20) {
+		//エンター表示
+		spriteEnter_->Draw();
+	}
+}
+//エンディング更新
+void GameScene::EndingUpdate() {
+	//エンターキーを押した瞬間
+	if (input_->TriggerKey(DIK_RETURN)) {
+		//モードをゲームプレイへ変更
+		sceneMode_ = 1;
+	// BGM切り替え
+	audio_->StopWave(voiceHandleBGM_);                                     // BGMを停止
+	voiceHandleBGM_ = audio_->PlayWave(soundDataHandleTitleBGM_, true); //タイトルBGMを再生
+	}
+}
+//エンディング表示2D
+void GameScene::GameOverDraw2DNear() {
+
+	//背景
+	spriteBG_->Draw();
+	//エンディング表示
+	spriteEnding_->Draw();
+
+	// if (gameTimer_ % 40 >= 20) {
+	//  //エンター表示
+	//  spriteEnter_->Draw();
+	// }
+}
+//エンディング表示2D(エンター)
+void GameScene::Ending2Draw() {
+	if (gameTimer_ % 40 >= 20) {
+		//エンター表示
+		spriteEnter_->Draw();
+	}
+}
+//スコア&プレイヤー&フラグ初期化
+void GameScene::GamePlayStart() {
 	
-	 //タイトル表示
-	 spriteTitle_->Draw();
-
-	 if (gameTimer_ % 40 >= 20) 
-	 {
-	 //エンター表示
-		 spriteEnter_->Draw();
-	 }
- }
- //エンディング更新
- void GameScene::EndingUpdate() {
-	 //エンターキーを押した瞬間
-	 if (input_->TriggerKey(DIK_RETURN)) {
-		 //モードをゲームプレイへ変更
-		 sceneMode_ = 1;
-	 }
- }
- //エンディング表示2D
- void GameScene::EndingDraw() {
-
-	 //背景
-	 spriteBG_->Draw();
-	 //エンディング表示
-	 spriteEnding_->Draw();
-
-	//if (gameTimer_ % 40 >= 20) {
-	// //エンター表示
-	// spriteEnter_->Draw();
-	//}
- }
- //エンディング表示2D(エンター)
- void GameScene::Ending2Draw() {
-	 if (gameTimer_ % 40 >= 20) {
-		 //エンター表示
-		 spriteEnter_->Draw();
-	 }
- }
-
- void GameScene::GamePlayStart() 
- {
 	playerLife_ = 3;
-    gameScore_ = 0;
-    enemyFlag_ = 0;
-    beamFlag_ == 0;
- }
+	gameScore_ = 0;
+	for (int e = 0; e < 10; e++) {
+
+		enemyFlag_[e] = 0;
+	}
+	for (int b = 0; b < 10; b++) {
+
+		beamFlag_[b] = 0;
+	}
+}
