@@ -51,6 +51,8 @@ class GameScene {
 	void GameOverDraw2DNear();     //エンディング
 	void Ending2Draw();            //エンター
 	void GamePlayStart();          //初期化処理
+	void StageUpdate();            //シーン更新
+	void EnemyJump();            //敵消滅
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
@@ -74,7 +76,7 @@ class GameScene {
 	//ステージ
 	uint32_t textureHandleStage_ = 0;
 	Model* modelStage_ = nullptr;
-	WorldTransform worldTransformStage_;
+	WorldTransform worldTransformStage_[20];
 	//プレイヤー
 	uint32_t textureHandlePlayer_ = 0;
 	Model* modelPlayer_ = nullptr;
@@ -96,6 +98,8 @@ class GameScene {
 	int enemyFlag_[10] = {};
 	//敵のスピード
 	float enemySpeed_[10] = {};
+	//敵ジャンプの移動速度
+	float enemyJumpSpeed_[10] = {};
 	//スコア
 	int gameScore_ = 0;
 	//サウンド

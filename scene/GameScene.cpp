@@ -28,11 +28,14 @@ void GameScene::Initialize() {
 	viewProjection_.target = {0, 1, 0};
 	viewProjection_.Initialize();
 	//ステージ
-	textureHandleStage_ = TextureManager::Load("stage.jpg");
+	textureHandleStage_ = TextureManager::Load("stage2.jpg");
 	modelStage_ = Model::Create();
-	worldTransformStage_.translation_ = {0, -1.5f, 0};
-	worldTransformStage_.scale_ = {4.5f, 1, 40};
-	worldTransformStage_.Initialize();
+	for (int s = 0; s < 20; s++)
+	{
+	worldTransformStage_[s].translation_ = {0, -1.5f, 2.0f * s - 5};
+	worldTransformStage_[s].scale_ = {4.5f, 1, 1};
+	worldTransformStage_[s].Initialize();
+	}
 	//プレイヤー
 	textureHandlePlayer_ = TextureManager::Load("player.png");
 	modelPlayer_ = Model::Create();
@@ -112,12 +115,27 @@ void GameScene::Update() {
 		break;
 	}
 }
+//ステージ更新
+void GameScene::StageUpdate() {
+	//各ステージでループ
+	for (int s = 0;s < 20;s++) {
+	//手前に移動
+		worldTransformStage_[s].translation_.z -= 0.1f;
+		//端まで来たら奥へ戻る
+		if (worldTransformStage_[s].translation_.z < -5) {
+			worldTransformStage_[s].translation_.z += 40;
+		}
+		//行列更新
+		worldTransformStage_[s].UpdateMatrix();
+	}
+}
 //ゲームプレイ更新
 void GameScene::GamePlayUpdate() {
 	PlayerUpdate(); //プレイヤー更新
 	EnemyUpdate();  //敵更新
 	BeamUpdate();   //ビーム更新
 	Collision();    //衝突判定
+	StageUpdate();
 
 }
 //プレイヤー更新
@@ -197,25 +215,33 @@ void GameScene::EnemyUpdate() {
 	EnemyMove();
 	//敵発生
 	EnemyBorn();
+	//敵消滅
+	EnemyJump();
 	for (int e = 0; e < 10; e++) {
 		worldTransformEnemy_[e].UpdateMatrix();
 	}
 }
 //敵移動
-void GameScene::EnemyMove() {
-	for (int e = 0; e < 10; e++) {
-		if (enemyFlag_[e] == 1) {
+void GameScene::EnemyMove() 
+{
+	for (int e = 0; e < 10; e++) 
+	{
+		if (enemyFlag_[e] == 1) 
+		{
 			worldTransformEnemy_[e].translation_.z -= 0.2f;
 			worldTransformEnemy_[e].rotation_.x -= 0.1f;
-			if (worldTransformEnemy_[e].translation_.z <= -5) {
+			if (worldTransformEnemy_[e].translation_.z <= -5) 
+			{
 				enemyFlag_[e] = 0;
 				worldTransformEnemy_[e].translation_.z = 40;
 			}
 			worldTransformEnemy_[e].translation_.x += enemySpeed_[e];
-	if (worldTransformEnemy_[e] .translation_.x <= -4) {
+	if (worldTransformEnemy_[e] .translation_.x <= -4) 
+	{
 				enemySpeed_[e] = 0.2f;
 	}
-	if (worldTransformEnemy_[e].translation_.x >= 4) {
+	if (worldTransformEnemy_[e].translation_.x >= 4) 
+	{
 		enemySpeed_[e] = -0.2f;
 	}
 		}
@@ -270,14 +296,14 @@ void GameScene::EnemyBorn() {
 	//	// worldTransformEnemy_.translation_.z -= 0.1f;
 	// }
 };
-//衝突判定
+//衝突判定呼び出し(プレイヤーと敵)
 void GameScene::Collision() {
-	//衝突判定(プレイヤーと敵)
+	//衝突判定
 	CollisionPlayerEnemy();
 }
-//衝突判定
+//衝突判定呼び出し(敵と弾)
 void GameScene::CollisionEnemy() {
-	//衝突判定(敵と弾)
+	//衝突判定
 	CollisionBeamEnemy();
 }
 //衝突判定(プレイヤーと敵)
@@ -337,9 +363,9 @@ void GameScene::CollisionBeamEnemy() {
 						//弾初期化
 						worldTransformBeam_[b].translation_.z = 0;
 						//存在しない
-						enemyFlag_[e] = 0;
-
+						enemyFlag_[e] = 2;
 						beamFlag_[b] = 0;
+						enemyJumpSpeed_[e] = 1;
 					}
 				}
 			}
@@ -363,6 +389,31 @@ void GameScene::CollisionBeamEnemy() {
 	//		beamFlag_ = 0;
 	//	}
 	// }
+}
+//敵ジャンプ
+void GameScene::EnemyJump() 
+{ 
+	//敵でループ
+	for (int e = 0;e < 10;e++) 
+	{ 
+		//消滅演出ならば
+		if (enemyFlag_[e] == 2)
+		{
+			//移動(Y座標に速度を加える)
+			worldTransformEnemy_[e].translation_.y += enemyJumpSpeed_[e];
+			//速度を減らす
+			enemyJumpSpeed_[e] -= 0.1f;
+			//斜め移動
+			worldTransformEnemy_[e].translation_.x += enemySpeed_[e] * 2;
+			//下は落ちると消滅
+			if (worldTransformEnemy_[e].translation_.y < -3) 
+			{
+				//存在しない
+				enemyFlag_[e] = 0;
+				worldTransformEnemy_[e].translation_.y = 0;
+			}
+		}
+	}
 }
 //表示
 void GameScene::Draw() {
@@ -469,7 +520,10 @@ void GameScene::Draw() {
 //ゲームプレイ表示3D
 void GameScene::GamePlayDraw3D() {
 	//ステージ
-	modelStage_->Draw(worldTransformStage_, viewProjection_, textureHandleStage_);
+	for (int s = 0;s < 20;s++) 
+	{
+		modelStage_->Draw(worldTransformStage_[s], viewProjection_, textureHandleStage_);
+	}
 	//プレイヤー
 	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
 	//ビーム
@@ -480,7 +534,7 @@ void GameScene::GamePlayDraw3D() {
 	}
 	//敵
 	for (int e = 0; e < 10; e++) {
-		if (enemyFlag_[e] == 1) {
+		if (enemyFlag_[e] == 1 || enemyFlag_[e] ==2) {
 			modelEnemy_->Draw(worldTransformEnemy_[e], viewProjection_, textureHandleEnemy_);
 		}
 	}
