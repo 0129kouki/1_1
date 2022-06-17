@@ -289,6 +289,7 @@ void GameScene::EnemyBorn() {
 				int x = rand() % 80;
 				float x2 = (float)x / 10 - 4;
 				worldTransformEnemy_[e].translation_.x = x2;
+				worldTransformEnemy_[e].translation_.y = 0;
 				worldTransformEnemy_[e].translation_.z = 40;
 				enemyFlag_[e] = 1;
 			//敵スピード
