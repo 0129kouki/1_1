@@ -83,6 +83,7 @@ class GameScene {
 	Model* modelPlayer_ = nullptr;
 	WorldTransform worldTransformPlayer_;
 	int playerLife_ = 3;
+	int playerTimer_ = 0;
 	//ビーム
 	uint32_t textureHandleBeam_ = 0;
 	Model* modelBeam_ = nullptr;

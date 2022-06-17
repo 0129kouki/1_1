@@ -174,6 +174,7 @@ void GameScene::PlayerUpdate() {
 	}
 	//行列更新
 	worldTransformPlayer_.UpdateMatrix();
+
 }
 //ビーム更新
 void GameScene::BeamUpdate() {
@@ -243,7 +244,10 @@ void GameScene::EnemyMove()
 	{
 		if (enemyFlag_[e] == 1) 
 		{
-			worldTransformEnemy_[e].translation_.z -= 0.2f;
+			//worldTransformEnemy_[e].translation_.z -= 0.2f;
+			//タイマーにより速度を設定
+			worldTransformEnemy_[e].translation_.z -= 0.1f;
+			worldTransformEnemy_[e].translation_.z -= gameTimer_ /1000.0f;
 			worldTransformEnemy_[e].rotation_.x -= 0.1f;
 			if (worldTransformEnemy_[e].translation_.z <= -5) 
 			{
@@ -323,7 +327,10 @@ void GameScene::CollisionEnemy() {
 }
 //衝突判定(プレイヤーと敵)
 void GameScene::CollisionPlayerEnemy() {
-
+	if (playerTimer_ >= 0)
+	{
+		playerTimer_--;
+	}
 	//敵が存在すれば
 	for (int e = 0; e < 10; e++) {
 		if (enemyFlag_[e] == 1) {
@@ -335,6 +342,7 @@ void GameScene::CollisionPlayerEnemy() {
 			//衝突したら
 			if (dx < 1 && dz < 1) {
 				playerLife_ -= 1;
+				playerTimer_ = 60;
 				//存在しない
 				enemyFlag_[e] = 0;
 				//プレイヤーヒットSE
@@ -540,7 +548,9 @@ void GameScene::GamePlayDraw3D() {
 		modelStage_->Draw(worldTransformStage_[s], viewProjection_, textureHandleStage_);
 	}
 	//プレイヤー
+	if (playerTimer_%4 < 2) {
 	modelPlayer_->Draw(worldTransformPlayer_, viewProjection_, textureHandlePlayer_);
+	}
 	//ビーム
 	for (int b = 0; b < 10; b++) {
 		if (beamFlag_[b] == 1) {
@@ -630,6 +640,8 @@ void GameScene::GamePlayStart() {
 	
 	playerLife_ = 3;
 	gameScore_ = 0;
+	gameTimer_ = 0;
+	playerTimer_ = 0;
 	for (int e = 0; e < 10; e++) {
 
 		enemyFlag_[e] = 0;
