@@ -52,7 +52,8 @@ class GameScene {
 	void Ending2Draw();            //エンター
 	void GamePlayStart();          //初期化処理
 	void StageUpdate();            //シーン更新
-	void EnemyJump();            //敵消滅
+	void EnemyJump();              //敵消滅
+	void DrawScore();              //スコア数値表示
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
@@ -124,6 +125,18 @@ class GameScene {
 
 	uint32_t textureHandleEnding2_ = 0;
 	Sprite* spriteEnding2_ = nullptr;
+	//スコア数値(スプライト)
+	uint32_t textureHandleNumber_ = 0;
+	Sprite* spriteNumber_[5] = {};
+
+	//スコア文字
+	uint32_t textureHandleScore_ = 0;
+	Sprite* spriteNumberScore_ = 0;
+	//プレイヤー残機
+	//uint32_t textureHandlePlayer_ = 0;
+	Sprite* spriteNumberPlayer1_ = 0;
+	Sprite* spriteNumberPlayer2_ = 0;
+	Sprite* spriteNumberPlayer3_ = 0;
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>

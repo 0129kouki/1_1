@@ -74,6 +74,21 @@ void GameScene::Initialize() {
 	//エンディング
 	textureHandleEnding_ = TextureManager::Load("gameover.png");
 	spriteEnding_ = Sprite::Create(textureHandleEnding_, {0, 0});
+	//スコア数値(2Dスプライト)
+	textureHandleNumber_ = TextureManager::Load("number.png");
+	for (int i = 0; i < 5; i++) {
+		spriteNumber_[i] = Sprite::Create(textureHandleNumber_, {300.0f + i * 26, 0});
+	}
+	//スコア
+	textureHandleScore_ = TextureManager::Load("score.png");
+	spriteNumberScore_ = Sprite::Create(textureHandleScore_, {180, 0});
+
+	//プレイヤー残機
+	textureHandlePlayer_ = TextureManager::Load("player.png");
+	spriteNumberPlayer1_ = Sprite::Create(textureHandlePlayer_, {900, 0});
+	spriteNumberPlayer2_ = Sprite::Create(textureHandlePlayer_, {950, 0});
+	spriteNumberPlayer3_ = Sprite::Create(textureHandlePlayer_, {1000, 0});
+
 }
 //更新
 void GameScene::Update() {
@@ -545,14 +560,16 @@ void GameScene::GamePlayDraw2DBack() {
 	spriteBG_->Draw();
 }
 //ゲームプレイ表示2D近景
-void GameScene::GamePlayDraw2DNear() {
-	char str[100];
+void GameScene::GamePlayDraw2DNear() 
+{
+	DrawScore();
+	/*char str[100];
 	sprintf_s(str, "SCORE %d", gameScore_);
 	debugText_->Print(str, 200, 10, 2);
 
 	char str2[100];
 	sprintf_s(str2, "PLAYERLIFE %d", playerLife_);
-	debugText_->Print(str2, 600, 10, 2);
+	debugText_->Print(str2, 600, 10, 2);*/
 }
 //タイトル更新
 void GameScene::TitleUpdate() {
@@ -620,5 +637,39 @@ void GameScene::GamePlayStart() {
 	for (int b = 0; b < 10; b++) {
 
 		beamFlag_[b] = 0;
+	}
+}
+//スコアの数値の表示
+void GameScene::DrawScore()
+{
+	//各桁の数値を描画
+	char eachNumber[5] = {};          //各桁の値
+	int number = gameScore_;          //表示する数字
+
+	int keta = 10000;                 //最初の桁
+	spriteNumberScore_->Draw();       //スコア文字
+	for ( int i = 0;i < 5;i++) {
+		eachNumber[i] = number / keta;//今の桁の値を求める
+		number = number % keta;       //次の桁以下の値を取り出す
+		keta = keta / 10;             //桁を進める
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		spriteNumber_[i]->SetSize({32, 64});
+		spriteNumber_[i]->SetTextureRect({32.0f * eachNumber[i], 0}, {32, 64});
+		spriteNumber_[i]->Draw();
+	}
+	//プレイヤー
+	if (playerLife_ >= 3) {
+	spriteNumberPlayer1_->SetSize({40, 40});
+	spriteNumberPlayer1_->Draw();
+	}
+	if (playerLife_ >= 2) {
+		spriteNumberPlayer2_->SetSize({40, 40});
+		spriteNumberPlayer2_->Draw();
+	}
+	if (playerLife_ >= 1) {
+		spriteNumberPlayer3_->SetSize({40, 40});
+		spriteNumberPlayer3_->Draw();
 	}
 }
